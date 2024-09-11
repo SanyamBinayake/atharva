@@ -157,12 +157,11 @@ def main():
         st.header("User Profiles")
         
         # Device distribution
-       fig_devices = px.pie(
-        values=users_df['device_info'].value_counts().values,  # Pie chart values
-        names=users_df['device_info'].value_counts().index,    # Pie chart labels
-        title="Device Distribution"
+        fig_devices = px.pie(
+            values=users_df['device_info'].value_counts().values,  # Pie chart values
+            names=users_df['device_info'].value_counts().index,    # Pie chart labels
+            title="Device Distribution"
         )
-
         st.plotly_chart(fig_devices, use_container_width=True)
 
         st.dataframe(users_df)
