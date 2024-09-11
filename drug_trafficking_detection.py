@@ -27,7 +27,7 @@ num_messages = 5000
 device_types = ['iPhone', 'Android', 'Windows PC', 'Mac', 'Linux', 'Tablet']
 
 # List of drug-related keywords
-drug_keywords = ['cocaine', 'heroin', 'meth', 'mdma', 'lsd', 'weed', 'pills', 'crack', 'ketamine', 'opioids']
+drug_keywords = ['cocaine', 'heroin', 'meth', 'mdma', 'lsd', 'weed', 'pills', 'crack', 'ketamine', 'opioids','drug','drugs']
 
 # Generate User Profiles
 @st.cache_data
