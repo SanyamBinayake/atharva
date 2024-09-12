@@ -11,9 +11,6 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 import joblib
 import random
 
-# Set a consistent color palette
-color_palette = px.colors.qualitative.Bold
-
 # Initialize Faker
 fake = Faker()
 Faker.seed(0) 
@@ -76,7 +73,7 @@ def generate_message_data(users_df, channels_df):
         'engagement': [random.randint(0, 100) for _ in range(num_messages)],
     })
     
-    messages['is_drug_related'] = messages['content'].apply(lambda x: 1 if any(keyword in x.lower() for keyword in drug_keywords) else 0)
+    messages['is_drug_related'] = messages['content'].apply(lambda x: 1 if any(keyword.lower() in x.lower() for keyword in drug_keywords) else 0)
     
     # Merge with channels_df to get platform information
     messages = messages.merge(channels_df[['channel_id', 'platform']], on='channel_id', how='left')
@@ -86,7 +83,7 @@ def generate_message_data(users_df, channels_df):
 # Train ML model
 @st.cache_resource
 def train_model(messages_df):
-    vectorizer = TfidfVectorizer()
+    vectorizer = TfidfVectorizer(stop_words='english')
     X = vectorizer.fit_transform(messages_df['content'])
     y = messages_df['is_drug_related']
     
@@ -140,33 +137,22 @@ def main():
             st.markdown(
                 f"""
                 <div style='background-color: #E6F3FF; padding: 20px; border-radius: 10px;'>
-                <h3 style='color: #0066CC;'>Quick Info</h3>
-                <p><strong>ID:</strong> 1674</p>
-                <p><strong>Organization:</strong> Narcotics Control Bureau (NCB)</p>
-                <p><strong>Department:</strong> Narcotics Control Bureau (NCB)</p>
-                <p><strong>Category:</strong> Software</p>
-                <p><strong>Theme:</strong> Blockchain & Cybersecurity</p>
+                    <h2>Problem</h2>
+                    <p>Identifying drug-related messages on messaging platforms can be challenging due to the vast amount of data and diverse communication styles. Our solution uses machine learning to enhance the detection process, providing a more efficient way to flag and review potential drug-related content.</p>
                 </div>
                 """,
                 unsafe_allow_html=True
             )
-        
         with col2:
             st.markdown(
                 f"""
-                <div style='background-color: #FFF5E6; padding: 20px; border-radius: 10px;'>
-                <h3 style='color: #CC6600;'>Software solutions to identify users behind Telegram, WhatsApp and Instagram based drug trafficking</h3>
-                <h4 style='color: #FF8C00;'>Background:</h4>
-                <p>Use of encrypted messaging/social media apps like Telegram, WhatsApp and Instagram for drug trafficking are on the rise. Channels operating on these platforms are blatantly being misused by drug traffickers for offering various narcotic drugs and psychotropic substances for sale.</p>
-                <h4 style='color: #FF8C00;'>Key Points:</h4>
-                <ul>
-                <li>Drug traffickers create channels and handles to offer drugs for sale to subscribers.</li>
-                <li>Customized Telegram bots are used by some traffickers to sell drugs.</li>
-                <li>Majority of drugs offered are dangerous synthetic drugs like MDMA, LSD, Mephedrone etc.</li>
-                <li>These apps are also used for drug-related communication.</li>
-                </ul>
-                <h4 style='color: #FF8C00;'>Expected Solution:</h4>
-                <p>Development of a software solution to identify live channels/bots/handles offering drugs for sale in India, focusing on triangulating identifiable parameters like IP address, mobile number, email id etc. of the users behind these channels.</p>
+                <div style='background-color: #E6F3FF; padding: 20px; border-radius: 10px;'>
+                    <h2>Objectives</h2>
+                    <ul>
+                        <li>Utilize machine learning to classify messages as drug-related or not.</li>
+                        <li>Visualize key metrics and trends in drug-related messaging.</li>
+                        <li>Provide actionable insights to enhance monitoring and enforcement.</li>
+                    </ul>
                 </div>
                 """,
                 unsafe_allow_html=True
@@ -174,72 +160,42 @@ def main():
 
     with tab1:
         st.header("Overview")
-        col1, col2, col3, col4 = st.columns(4)
         
+        col1, col2 = st.columns(2)
         with col1:
-            st.metric("Total Users", len(users_df))
+            st.subheader("User Profiles")
+            st.write(users_df.describe())
+
         with col2:
-            st.metric("Total Channels", len(channels_df))
-        with col3:
-            st.metric("Total Messages", len(messages_df))
-        with col4:
-            st.metric("Suspected Drug-Related Messages", messages_df['is_drug_related'].sum())
-        
-        # Activity over time
-        fig_activity = px.line(messages_df.groupby(messages_df['timestamp'].dt.date).size().reset_index(name='count'), 
-                               x='timestamp', y='count', title="Activity Over Time",
-                               labels={'timestamp': 'Date', 'count': 'Number of Messages'})
-        st.plotly_chart(fig_activity)
-        
-        # Platform distribution
-        fig_platform = px.pie(channels_df, names='platform', title="Channel Platform Distribution",
-                             color='platform', color_discrete_sequence=color_palette)
-        st.plotly_chart(fig_platform)
-        
-        # Engagement distribution
-        fig_engagement = px.histogram(messages_df, x='engagement', nbins=30, title="Engagement Distribution")
-        st.plotly_chart(fig_engagement)
+            st.subheader("Channel/Group Information")
+            st.write(channels_df.describe())
 
     with tab2:
         st.header("User Profiles")
-        st.dataframe(users_df.head())
         
-        # User account age vs average daily messages
-        fig_user_age = px.scatter(users_df, x='account_age_days', y='avg_daily_messages', 
-                                  title="Account Age vs Average Daily Messages", 
-                                  labels={'account_age_days': 'Account Age (days)', 'avg_daily_messages': 'Average Daily Messages'})
-        st.plotly_chart(fig_user_age)
-    
+        st.write(users_df.head())
+
     with tab3:
         st.header("Channels/Groups")
-        st.dataframe(channels_df.head())
-        
-        # Members count vs activity level
-        fig_activity_level = px.box(channels_df, x='activity_level', y='members_count', 
-                                    title="Members Count by Activity Level",
-                                    labels={'members_count': 'Number of Members'})
-        st.plotly_chart(fig_activity_level)
-    
+
+        st.write(channels_df.head())
+
     with tab4:
         st.header("Messages")
-        st.dataframe(messages_df[['message_id', 'timestamp', 'sender_id', 'channel_id', 'content', 'is_drug_related']].head())
         
-        # Drug-related messages
-        fig_drug_related = px.bar(messages_df[messages_df['is_drug_related'] == 1], 
-                                 x='timestamp', y='engagement', title="Drug-Related Messages Over Time")
-        st.plotly_chart(fig_drug_related)
-    
+        st.write(messages_df.head())
+
     with tab5:
         st.header("ML Insights")
-        st.text_area("Model Classification Report:", classification_report, height=400)
+
+        st.write("Classification Report:")
+        st.text(classification_report)
         
-        st.subheader("Live Message Classification")
-        user_input = st.text_area("Enter a message to classify:")
+        st.subheader("Test Message Classification")
+        user_input = st.text_area("Enter a message to classify:", "")
+        
         if user_input:
-            processed_input = vectorizer.transform([user_input])
-            prediction = model.predict(processed_input)[0]
-            probability = model.predict_proba(processed_input)[0][1]
-            
+            prediction, probability = test_prediction(user_input, model, vectorizer)
             st.write(f"Prediction: {'Drug-Related' if prediction == 1 else 'Not Drug-Related'}")
             st.write(f"Probability of being drug-related: {probability:.2f}")
 
