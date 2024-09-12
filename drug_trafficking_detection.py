@@ -6,7 +6,7 @@ import plotly.graph_objects as go
 from faker import Faker
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import confusion_matrix, classification_report
+from sklearn.metrics import classification_report
 from sklearn.feature_extraction.text import TfidfVectorizer
 import joblib
 import random
@@ -95,6 +95,19 @@ def train_model(messages_df):
     y_pred = model.predict(X_test)
     
     return model, vectorizer, classification_report(y_test, y_pred)
+
+# Test Prediction Function
+def test_prediction(user_input, model, vectorizer):
+    transformed_input = vectorizer.transform([user_input])
+    feature_names = vectorizer.get_feature_names_out()
+    feature_counts = transformed_input.toarray().flatten()
+    feature_present = {feature_names[i]: feature_counts[i] for i in range(len(feature_names)) if feature_counts[i] > 0}
+    print("Features in input:", feature_present)
+    
+    prediction = model.predict(transformed_input)[0]
+    probability = model.predict_proba(transformed_input)[0][1]
+    
+    return prediction, probability
 
 # Main app
 def main():
