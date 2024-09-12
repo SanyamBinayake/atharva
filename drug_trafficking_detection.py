@@ -11,6 +11,12 @@ from sklearn.feature_extraction.text import CountVectorizer
 import joblib
 import random
 
+
+
+
+# Now use 'drug_keywords' as usual
+
+
 # Set a consistent color palette
 color_palette = px.colors.qualitative.Bold
 
@@ -26,9 +32,10 @@ num_messages = 5000
 # Custom list of device types
 device_types = ['iPhone', 'Android', 'Windows PC', 'Mac', 'Linux', 'Tablet']
 
-# List of drug-related keywords
-drug_keywords = ['cocaine', 'heroin', 'meth', 'mdma', 'lsd', 'weed', 'pills', 'crack', 'ketamine', 'opioids']
 
+# Load drug keywords from CSV file
+drug_keywords_df = pd.read_csv('drug_keywords.csv')
+drug_keywords = drug_keywords_df['keyword'].tolist()
 # Generate User Profiles
 @st.cache_data
 def generate_user_data():
