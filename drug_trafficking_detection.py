@@ -27,7 +27,16 @@ num_messages = 5000
 device_types = ['iPhone', 'Android', 'Windows PC', 'Mac', 'Linux', 'Tablet']
 
 # List of drug-related keywords
-drug_keywords = ['cocaine', 'heroin', 'meth', 'mdma', 'lsd', 'weed', 'pills', 'crack', 'ketamine', 'opioids']
+# List of drug-related keywords
+drug_keywords = [
+    'cocaine', 'heroin', 'meth', 'mdma', 'lsd', 'weed', 'pills', 'crack', 'ketamine', 'opioids',
+    'fentanyl', 'morphine', 'oxycontin', 'percocet', 'vicodin', 'adderall', 'xanax', 'valium', 'suboxone',
+    'hydrocodone', 'tramadol', 'buprenorphine', 'amphetamine', 'ecstasy', 'mephedrone', 'gbl', 'mdpv', 'pcp',
+    'dmt', 'salvia', 'n-bomb', 'krokodil', 'ghb', 'opana', 'heroin', 'carfentanil', 'ethylphenidate', 'methadone',
+    'dilaudid', 'poppy seeds', 'khat', 'huffing', 'whippets', 'butane', 'nitrous oxide', 'skunk', 'hashish',
+    'tincture', 'mescaline', 'peyote', 'amphetamine', 'methylphenidate', 'dextromethorphan', 'codeine', 'romilar'
+]
+
 
 # Generate User Profiles
 @st.cache_data
