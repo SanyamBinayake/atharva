@@ -123,28 +123,28 @@ def main():
         st.plotly_chart(fig_drug_activity, use_container_width=True)
 
    with tab2:
-    st.header("User Profiles")
+        st.header("User Profiles")
+        
+        # Ensure 'device_info' column has no NaN values
+        if 'device_info' in users_df.columns:
+            users_df['device_info'].fillna('Unknown', inplace=True)  # Handle missing values
     
-    # Ensure 'device_info' column has no NaN values
-    if 'device_info' in users_df.columns:
-        users_df['device_info'].fillna('Unknown', inplace=True)  # Handle missing values
-
-        # Device distribution
-        device_counts = users_df['device_info'].value_counts().reset_index()
-        device_counts.columns = ['device_info', 'count']  # Rename columns for clarity
-
-        # Check if there are valid entries to plot
-        if not device_counts.empty:
-            fig_devices = px.pie(device_counts, 
-                                 values='count', 
-                                 names='device_info', 
-                                 title="Device Distribution",
-                                 color_discrete_sequence=color_palette)
-            st.plotly_chart(fig_devices, use_container_width=True)
+            # Device distribution
+            device_counts = users_df['device_info'].value_counts().reset_index()
+            device_counts.columns = ['device_info', 'count']  # Rename columns for clarity
+    
+            # Check if there are valid entries to plot
+            if not device_counts.empty:
+                fig_devices = px.pie(device_counts, 
+                                     values='count', 
+                                     names='device_info', 
+                                     title="Device Distribution",
+                                     color_discrete_sequence=color_palette)
+                st.plotly_chart(fig_devices, use_container_width=True)
+            else:
+                st.warning("No device information available for users.")
         else:
-            st.warning("No device information available for users.")
-    else:
-        st.warning("'device_info' column is missing from the data.")
+            st.warning("'device_info' column is missing from the data.")
 
 
     with tab3:
