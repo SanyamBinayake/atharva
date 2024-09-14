@@ -20,7 +20,7 @@ def load_csv_data(file_path):
 @st.cache_resource
 def train_model(messages_df):
     vectorizer = CountVectorizer()
-    X = vectorizer.fit_transform(messages_df['content'])
+    X = vectorizer.fit_transform(messages_df['content'].astype(str))  # Ensure content is string type
     y = messages_df['is_drug_related']
     
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
@@ -30,7 +30,25 @@ def train_model(messages_df):
     
     y_pred = model.predict(X_test)
     
-    return model, vectorizer, classification_report(y_test, y_pred, output_dict=True)
+    return model, vectorizer, classification_report(y_test, y_pred)
+
+# Function to debug predictions
+def debug_prediction(user_input, model, vectorizer):
+    # Transform the input
+    input_vector = vectorizer.transform([user_input])
+    
+    # Get the prediction and probability
+    prediction = model.predict(input_vector)[0]
+    probability = model.predict_proba(input_vector)[0][1]
+    
+    # Print debug information
+    print(f"Input: {user_input}")
+    print(f"Input vector shape: {input_vector.shape}")
+    print(f"Input vector non-zero elements: {input_vector.nnz}")
+    print(f"Prediction: {prediction}")
+    print(f"Probability: {probability}")
+    
+    return prediction, probability
 
 # Main app
 def main():
@@ -75,7 +93,7 @@ def main():
 
     with tab0:
         st.header("Problem Statement")
-        # [Problem Statement content]
+        # ... [Problem Statement content remains the same]
 
     with tab1:
         st.header("Overview")
@@ -118,22 +136,31 @@ def main():
                                        labels={'account_age_days': 'Account Age (Days)', 'avg_daily_messages': 'Average Daily Messages'},
                                        color_discrete_sequence=[color_palette[3]])
         st.plotly_chart(fig_user_activity, use_container_width=True)
+        
+        st.dataframe(users_df)
 
     with tab3:
         st.header("Channels/Groups")
-        # Channel activity levels
+        # Activity levels
         fig_activity = px.bar(channels_df['activity_level'].value_counts().reset_index(), 
                               x='index', y='activity_level', title="Channel Activity Levels",
                               labels={'index': 'Activity Level', 'activity_level': 'Number of Channels'},
-                              color='index',
                               color_discrete_sequence=color_palette)
         st.plotly_chart(fig_activity, use_container_width=True)
         
-        # Channel privacy
+        # Member count distribution
+        fig_members = px.histogram(channels_df, x='members_count', title="Channel Member Count Distribution",
+                                   labels={'members_count': 'Number of Members', 'count': 'Number of Channels'},
+                                   color_discrete_sequence=[color_palette[1]])
+        st.plotly_chart(fig_members, use_container_width=True)
+        
+        # Private vs Public channels
         fig_privacy = px.pie(channels_df['is_private'].value_counts().reset_index(), 
                              values='is_private', names='index', title="Private vs Public Channels",
                              color_discrete_sequence=[color_palette[2], color_palette[3]])
         st.plotly_chart(fig_privacy, use_container_width=True)
+        
+        st.dataframe(channels_df)
 
     with tab4:
         st.header("Messages")
@@ -141,13 +168,20 @@ def main():
         fig_drug_related = px.pie(messages_df['is_drug_related'].value_counts().reset_index(), 
                                   values='is_drug_related', names='index', 
                                   title="Drug-Related vs Non-Drug-Related Messages",
-                                  labels={'index': 'Is Drug Related', 'is_drug_related': 'Number of Messages'},
                                   color_discrete_map={0: color_palette[0], 1: color_palette[1]})
         st.plotly_chart(fig_drug_related, use_container_width=True)
+        
+        # Engagement vs Drug-Related
+        fig_engagement = px.box(messages_df, x='is_drug_related', y='engagement', 
+                                title="Engagement vs Drug-Related Content",
+                                labels={'is_drug_related': 'Is Drug Related', 'engagement': 'Engagement Level'},
+                                color_discrete_sequence=color_palette)
+        st.plotly_chart(fig_engagement, use_container_width=True)
+        
+        st.dataframe(messages_df)
 
     with tab5:
         st.header("Machine Learning Insights")
-        
         st.subheader("Model Performance")
         st.text(classification_report)
         
@@ -159,26 +193,26 @@ def main():
         
         fig_importance = px.bar(feature_importance, x='importance', y='feature', orientation='h',
                                 title="Top 20 Important Features for Drug-Related Message Detection",
-                                labels={'importance': 'Importance Score', 'feature': 'Word or Phrase'},
                                 color='importance',
                                 color_continuous_scale=px.colors.sequential.Viridis)
         st.plotly_chart(fig_importance, use_container_width=True)
-        
+
         st.subheader("Live Message Classification")
         user_input = st.text_area("Enter a message to classify:")
         if user_input:
-            prediction = model.predict(vectorizer.transform([user_input]))[0]
-            probability = model.predict_proba(vectorizer.transform([user_input]))[0][1]
+            prediction, probability = debug_prediction(user_input, model, vectorizer)
             
             st.write(f"Prediction: {'Drug-Related' if prediction == 1 else 'Not Drug-Related'}")
             st.write(f"Probability of being drug-related: {probability:.2f}")
-    
-    # Footer
-    st.sidebar.markdown("---")
-    st.sidebar.info("""
-    **Note:** This app analyzes CSV data from the connected GitHub repository to detect and analyze suspicious activities related to drug trafficking on messaging platforms.
-    In a real-world scenario, such tools must be used responsibly, with proper legal authorization, and with careful consideration of privacy rights and potential biases in the AI system.
-    """)
+            
+            st.write("Debug Information:")
+            st.json({
+                "Input": user_input,
+                "Prediction": int(prediction),
+                "Probability": float(probability),
+                "Vectorizer Vocabulary Size": vectorizer.vocabulary_.__len__(),
+                "Input Vector Non-Zero Elements": int(input_vector.nnz)
+            })
 
 if __name__ == "__main__":
     main()
