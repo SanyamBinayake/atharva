@@ -121,9 +121,11 @@ def main():
                                     labels={'timestamp': 'Date', 'count': 'Number of Drug-Related Messages'},
                                     color_discrete_sequence=[color_palette[1]])
         st.plotly_chart(fig_drug_activity, use_container_width=True)
-
-   with tab2:
-       st.header("User Profiles")
+        
+    with tab2:
+        st.header("User Profiles")
+        
+        # Ensure 'device_info' column has no NaN values
         if 'device_info' in users_df.columns:
             users_df['device_info'].fillna('Unknown', inplace=True)  # Handle missing values
     
@@ -143,8 +145,6 @@ def main():
                 st.warning("No device information available for users.")
         else:
             st.warning("'device_info' column is missing from the data.")
-       
-        
 
 
     with tab3:
