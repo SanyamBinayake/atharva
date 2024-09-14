@@ -297,6 +297,40 @@ def main():
             - The probability gives an idea of how confident the model is in its prediction.
             - If the model frequently misclassifies certain types of messages, it might need further training or refinement.
             """)
+    # Add this function to your code
+def debug_prediction(user_input, model, vectorizer):
+    # Transform the input
+    input_vector = vectorizer.transform([user_input])
+    
+    # Get the prediction and probability
+    prediction = model.predict(input_vector)[0]
+    probability = model.predict_proba(input_vector)[0][1]
+    
+    # Print debug information
+    print(f"Input: {user_input}")
+    print(f"Input vector shape: {input_vector.shape}")
+    print(f"Input vector non-zero elements: {input_vector.nnz}")
+    print(f"Prediction: {prediction}")
+    print(f"Probability: {probability}")
+    
+    return prediction, probability
+
+# In your main Streamlit app, replace the prediction code with this:
+if user_input:
+    prediction, probability = debug_prediction(user_input, model, vectorizer)
+    
+    st.write(f"Prediction: {'Drug-Related' if prediction == 1 else 'Not Drug-Related'}")
+    st.write(f"Probability of being drug-related: {probability:.2f}")
+    
+    # Display debug information
+    st.write("Debug Information:")
+    st.json({
+        "Input": user_input,
+        "Prediction": int(prediction),
+        "Probability": float(probability),
+        "Vectorizer Vocabulary Size": len(vectorizer.vocabulary_),
+        "Model Features": model.n_features_in_
+    })
 
 
     # Footer
