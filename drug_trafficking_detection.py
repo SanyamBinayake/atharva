@@ -121,30 +121,34 @@ def main():
                                     labels={'timestamp': 'Date', 'count': 'Number of Drug-Related Messages'},
                                     color_discrete_sequence=[color_palette[1]])
         st.plotly_chart(fig_drug_activity, use_container_width=True)
-        
+
     with tab2:
-        st.header("User Profiles")
+        st.header("Channel Activity Levels")
         
-        # Ensure 'device_info' column has no NaN values
-        if 'device_info' in users_df.columns:
-            users_df['device_info'].fillna('Unknown', inplace=True)  # Handle missing values
+        # Ensure 'activity_level' column exists
+        if 'activity_level' in channels_df.columns:
+            # Handle missing values
+            channels_df['activity_level'].fillna('Unknown', inplace=True)
     
-            # Device distribution
-            device_counts = users_df['device_info'].value_counts().reset_index()
-            device_counts.columns = ['device_info', 'count']  # Rename columns for clarity
+            # Activity level distribution
+            activity_counts = channels_df['activity_level'].value_counts().reset_index()
+            activity_counts.columns = ['activity_level', 'count']  # Rename columns for clarity
     
-            # Check if there are valid entries to plot
-            if not device_counts.empty:
-                fig_devices = px.pie(device_counts, 
-                                     values='count', 
-                                     names='device_info', 
-                                     title="Device Distribution",
-                                     color_discrete_sequence=color_palette)
-                st.plotly_chart(fig_devices, use_container_width=True)
+            # Check if there's data to plot
+            if not activity_counts.empty:
+                fig_activity = px.bar(activity_counts,
+                                      x='activity_level',
+                                      y='count',
+                                      title="Channel Activity Levels",
+                                      color_discrete_sequence=color_palette)
+                st.plotly_chart(fig_activity, use_container_width=True)
             else:
-                st.warning("No device information available for users.")
+                st.warning("No activity level data available.")
         else:
-            st.warning("'device_info' column is missing from the data.")
+            st.warning("'activity_level' column is missing from the data.")
+
+        
+    
 
 
     with tab3:
