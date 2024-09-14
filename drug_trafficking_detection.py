@@ -122,22 +122,30 @@ def main():
                                     color_discrete_sequence=[color_palette[1]])
         st.plotly_chart(fig_drug_activity, use_container_width=True)
 
-    with tab2:
-        st.header("User Profiles")
+   with tab2:
+    st.header("User Profiles")
+    
+    # Ensure 'device_info' column has no NaN values
+    if 'device_info' in users_df.columns:
+        users_df['device_info'].fillna('Unknown', inplace=True)  # Handle missing values
+
         # Device distribution
-        fig_devices = px.pie(users_df['device_info'].value_counts().reset_index(), 
-                             values='device_info', names='index', title="Device Distribution",
-                             color_discrete_sequence=color_palette)
-        st.plotly_chart(fig_devices, use_container_width=True)
-        
-        # User activity
-        fig_user_activity = px.scatter(users_df, x='account_age_days', y='avg_daily_messages', 
-                                       title="User Activity", hover_data=['username'],
-                                       labels={'account_age_days': 'Account Age (Days)', 'avg_daily_messages': 'Average Daily Messages'},
-                                       color_discrete_sequence=[color_palette[3]])
-        st.plotly_chart(fig_user_activity, use_container_width=True)
-        
-        st.dataframe(users_df)
+        device_counts = users_df['device_info'].value_counts().reset_index()
+        device_counts.columns = ['device_info', 'count']  # Rename columns for clarity
+
+        # Check if there are valid entries to plot
+        if not device_counts.empty:
+            fig_devices = px.pie(device_counts, 
+                                 values='count', 
+                                 names='device_info', 
+                                 title="Device Distribution",
+                                 color_discrete_sequence=color_palette)
+            st.plotly_chart(fig_devices, use_container_width=True)
+        else:
+            st.warning("No device information available for users.")
+    else:
+        st.warning("'device_info' column is missing from the data.")
+
 
     with tab3:
         st.header("Channels/Groups")
